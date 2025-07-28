@@ -1,4 +1,4 @@
-from pipeline import IllusionDiffusion
+from illusion_diffusion import IllusionDiffusion
 
 if __name__ == "__main__":
     illusion = IllusionDiffusion(device="mps")
@@ -12,7 +12,7 @@ if __name__ == "__main__":
         guidance_scale=7.5,
         controlnet_conditioning_scale=1.4,
         upscaler_strength=0.75,
-        seed=42,
+        seed=-1,
         sampler="Euler",
         enable_upscaling=False,
     )
