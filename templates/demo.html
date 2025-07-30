@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock CAPTCHA Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .demo-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        
+        .demo-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .code-block {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .captcha-demo {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🕐 Clock CAPTCHA</h1>
+        <p class="subtitle">AI-powered time recognition CAPTCHA service</p>
+        
+        <div class="demo-section">
+            <h3>🚀 Live Demo</h3>
+            <p>Try the Clock CAPTCHA below:</p>
+            
+            <div class="captcha-demo">
+                <div class="clock-captcha" data-sitekey="demo"></div>
+                <div id="demo-result" style="display: none;"></div>
+            </div>
+            
+        </div>
+        
+        <div class="demo-section">
+            <h3>📝 How to Use</h3>
+            <p>Integrate Clock CAPTCHA into your website like Google reCAPTCHA:</p>
+            
+            <h4>1. Include the API script:</h4>
+            <div class="code-block">
+&lt;script src="http://localhost:8000/api.js" async defer&gt;&lt;/script&gt;
+            </div>
+            
+            <h4>2. Add the CAPTCHA element:</h4>
+            <div class="code-block">
+&lt;div class="clock-captcha" data-sitekey="your-site-key"&gt;&lt;/div&gt;
+            </div>
+            
+            <h4>3. Verify on your server:</h4>
+            <div class="code-block">
+POST http://localhost:8000/api/siteverify
+{
+    "token": "user-response-token",
+    "remoteip": "user-ip-address"
+}
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🔧 API Endpoints</h3>
+            <ul>
+                <li><code>GET /api.js</code> - JavaScript client library</li>
+                <li><code>GET /api/challenge</code> - Generate new CAPTCHA challenge</li>
+                <li><code>POST /api/verify</code> - Verify user response</li>
+                <li><code>POST /api/siteverify</code> - Server-side token verification</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>🎨 AI-generated clock images with artistic styles</li>
+                <li>🛡️ Adversarial noise to prevent AI recognition</li>
+                <li>🔒 JWT-based secure token verification</li>
+                <li>⚡ Fast response with pre-generated image pool</li>
+                <li>🌐 Easy integration with existing websites</li>
+                <li>📱 Mobile-friendly responsive design</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Clock CAPTCHA API -->
+    <script src="/api.js" async defer></script>
+    
+    <script>
+        function onCaptchaSuccess(token) {
+            const resultDiv = document.getElementById('demo-result');
+            resultDiv.innerHTML = `
+                <div class="status-message success">
+                    ✅ CAPTCHA verified successfully!<br>
+                    <small>Token: ${token.substring(0, 20)}...</small>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+            
+            // 서버 검증 데모
+            setTimeout(() => {
+                verifyTokenOnServer(token);
+            }, 1000);
+        }
+        
+        function verifyTokenOnServer(token) {
+            const formData = new FormData();
+            formData.append('token', token);
+            
+            fetch('/api/siteverify', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('demo-result');
+                if (data.success) {
+                    resultDiv.innerHTML += `
+                        <div class="status-message info">
+                            🔒 Server verification: SUCCESS<br>
+                            <small>Challenge timestamp: ${data.challenge_ts}</small>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML += `
+                        <div class="status-message error">
+                            ❌ Server verification failed<br>
+                            <small>Error: ${data['error-codes']}</small>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        // 자동 렌더링이 작동하지 않을 경우를 위한 수동 렌더링
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (window.ClockCaptcha && document.querySelector('.clock-captcha:empty')) {
+                    ClockCaptcha.render(document.querySelector('.clock-captcha'), {
+                        sitekey: 'demo',
+                        callback: onCaptchaSuccess
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

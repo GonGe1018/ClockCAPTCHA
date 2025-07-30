@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock CAPTCHA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .captcha-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 300px;
+            text-align: center;
+        }
+        
+        .captcha-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .clock-image {
+            width: 200px;
+            height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 10px auto;
+            display: block;
+            object-fit: cover;
+        }
+        
+        .choices-container {
+            margin: 15px 0;
+        }
+        
+        .choice-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .choice-button:hover {
+            border-color: #4285f4;
+            background-color: #f8f9ff;
+        }
+        
+        .choice-button.selected {
+            border-color: #4285f4;
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        
+        .verify-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .verify-button:hover {
+            background-color: #3367d6;
+        }
+        
+        .verify-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4285f4;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="captcha-container">
+        <div class="captcha-title">What time does this clock show?</div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <div>Loading challenge...</div>
+        </div>
+        
+        <div id="captcha-content" style="display: none;">
+            <img class="clock-image" id="clock-image" alt="Clock" />
+            
+            <div class="choices-container" id="choices-container">
+                <!-- 선택지들이 여기에 동적으로 추가됩니다 -->
+            </div>
+            
+            <button class="verify-button" id="verify-button" disabled>Verify</button>
+        </div>
+        
+        <div id="status-message" class="status-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let selectedAnswer = null;
+
+        // 페이지 로드 시 새로운 챌린지 요청
+        window.addEventListener('load', function() {
+            loadNewChallenge();
+        });
+
+        function loadNewChallenge() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('captcha-content').style.display = 'none';
+            
+            fetch('/api/challenge')
+                .then(response => response.json())
+                .then(data => {
+                    currentSessionId = data.session_id;
+                    setupCaptcha(data);
+                })
+                .catch(error => {
+                    showStatus('Failed to load captcha. Please refresh.', 'error');
+                });
+        }
+
+        function setupCaptcha(data) {
+            const clockImage = document.getElementById('clock-image');
+            const choicesContainer = document.getElementById('choices-container');
+            const verifyButton = document.getElementById('verify-button');
+            
+            // 이미지 설정
+            clockImage.src = data.image_url;
+            
+            // 선택지 생성
+            choicesContainer.innerHTML = '';
+            data.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice;
+                button.onclick = () => selectChoice(choice, button);
+                choicesContainer.appendChild(button);
+            });
+            
+            // 검증 버튼 이벤트
+            verifyButton.onclick = verifyAnswer;
+            verifyButton.disabled = true;
+            
+            // UI 표시
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('captcha-content').style.display = 'block';
+        }
+
+        function selectChoice(answer, buttonElement) {
+            // 이전 선택 제거
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 새 선택 적용
+            buttonElement.classList.add('selected');
+            selectedAnswer = answer;
+            
+            // 검증 버튼 활성화
+            document.getElementById('verify-button').disabled = false;
+        }
+
+        function verifyAnswer() {
+            if (!selectedAnswer || !currentSessionId) return;
+            
+            const formData = new FormData();
+            formData.append('session_id', currentSessionId);
+            formData.append('answer', selectedAnswer);
+            
+            fetch('/api/verify', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('Verification successful!', 'success');
+                    
+                    // 부모 창에 성공 메시지 전송
+                    window.parent.postMessage({
+                        type: 'clock-captcha-success',
+                        token: data.token
+                    }, '*');
+                } else {
+                    showStatus(data.message || 'Verification failed. Please try again.', 'error');
+                    // 실패 시 새로운 챌린지 로드
+                    setTimeout(loadNewChallenge, 2000);
+                }
+            })
+            .catch(error => {
+                showStatus('Verification error. Please try again.', 'error');
+                setTimeout(loadNewChallenge, 2000);
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
