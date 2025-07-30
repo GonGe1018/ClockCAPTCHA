@@ -1,8 +1,11 @@
 tempCodeRunnerFile.py
 .venv
-*.png
+# *.png
 .DS_Store
 image_metadata.json
+
+generated_captchas/
+clocks/
 
 # Environment variables
 .env
