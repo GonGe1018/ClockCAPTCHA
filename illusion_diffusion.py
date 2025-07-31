@@ -23,7 +23,7 @@ class IllusionDiffusion:
 
     def __init__(
         self,
-        device: str = "cuda",
+        device: str,
         base_model: str = "SG161222/Realistic_Vision_V5.1_noVAE",
     ):
         """

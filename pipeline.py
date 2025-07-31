@@ -6,8 +6,10 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 import uuid
 import numpy as np
 from typing import List
+import os
 
-illusion = IllusionDiffusion(device="mps")
+
+illusion = IllusionDiffusion(device=os.getenv("DEVICE"))
 
 
 def add_adversarial_noise(
