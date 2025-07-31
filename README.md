@@ -31,7 +31,7 @@ Based on: [https://huggingface.co/spaces/AP123/IllusionDiffusion](https://huggin
 ### 1. Install repo
 
 ```bash
-git clone https://github.com/yourusername/ClockCAPTCHA.git
+git clone https://github.com/GonGe1018/ClockCAPTCHA.git
 cd ClockCAPTCHA
 pip install -e .
 ```
