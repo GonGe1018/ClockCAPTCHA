@@ -33,7 +33,7 @@ Based on: [https://huggingface.co/spaces/AP123/IllusionDiffusion](https://huggin
 ```bash
 git clone https://github.com/GonGe1018/ClockCAPTCHA.git
 cd ClockCAPTCHA
-pip install -e .
+uv sync
 ```
 
 ### 2. env setting
