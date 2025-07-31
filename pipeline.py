@@ -93,7 +93,7 @@ def post_process_image(
     grayscale: bool = False,
     add_noise: bool = False,
     noise_type: str = "mixed",
-    noise_intensity: float = 0.3,
+    noise_intensity: float = 0.6,
 ) -> Image.Image:
     """
     이미지 후처리: 크기 조정, 노이즈 추가 및 흑백 변환
@@ -136,7 +136,7 @@ def generate_clock_captcha(
     save_dir: str = "./generated_captchas",
     add_noise: bool = False,
     noise_type: str = "mixed",
-    noise_intensity: float = 0.3,
+    noise_intensity: float = 0.6,
     output_size: tuple = None,
     grayscale: bool = False,
 ) -> List[Image.Image]:
